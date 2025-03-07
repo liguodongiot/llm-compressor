@@ -13,6 +13,7 @@ __all__ = ["StageModifiers"]
 
 class StageModifiers(ModifierInterface, BaseModel):
     """
+    代表一个Stage一起应用的 Modifiers 集合。
     Represents a collection of modifiers that are applied together as a stage.
 
     :param modifiers: The modifiers to apply as a stage

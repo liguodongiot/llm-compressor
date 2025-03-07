@@ -19,6 +19,11 @@ __all__ = ["Recipe", "RecipeTuple"]
 
 class Recipe(RecipeBase):
     """
+    表示模型配方的类。 配方将修改模型或训练过程所需的指令编码为 modifiers 列表。
+
+    配方可以通过文件、字符串或 HuggingFace 创建。
+    可接受的文件格式包括 json 和 yaml，但在序列化配方时，默认使用 yaml。
+
     A class to represent a recipe for a model.
     Recipes encode the instructions needed for modifying
     the model and/or training process as a list of modifiers.
@@ -215,6 +220,9 @@ class Recipe(RecipeBase):
         recipes: List[Union["Recipe", "RecipeTuple"]],
     ) -> "Recipe":
         """
+        将多个配方合并为一个配方的方法
+        自动计算合并配方的起点和终点，并相应移动配方的起点和终点
+
         A method to combine multiple recipes into one recipe
         Automatically calculates the start and end of the combined recipe
         and shifts the start and end of the recipes accordingly

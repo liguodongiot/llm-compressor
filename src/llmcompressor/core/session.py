@@ -36,6 +36,7 @@ class _CallbackContainer:
 
 class CompressionSession:
     """
+    用于压缩的 Session，保存当前压缩 Session 的生命周期和状态
     A session for compression that holds the lifecycle
     and state for the current compression session
     """
@@ -74,6 +75,7 @@ class CompressionSession:
         **kwargs,
     ) -> ModifiedState:
         """
+        # TODO:FLOW 预先初始化模型结构以进行压缩
         A method to pre-initialize the structure of the model for compression.
         This will run the pre-initialize structure method for each modifier in the
         session's lifecycle. This will also set the session's state to the
@@ -125,6 +127,9 @@ class CompressionSession:
         **kwargs,
     ) -> ModifiedState:
         """
+        初始化会话
+        这将为会话生命周期中的每个 modifier 运行初始化方法。这也会将会话的状态设置为初始化状态。
+
         Initialize the session for compression. This will run the initialize method
         for each modifier in the session's lifecycle. This will also set the session's
         state to the initialized state.
@@ -184,6 +189,10 @@ class CompressionSession:
 
     def finalize(self, **kwargs) -> ModifiedState:
         """
+        完成会话
+
+        这样就会在会话的生命周期里，对每个modifier运行finalize方法。还会把会话的状态设置成 finalized 的状态。
+
         Finalize the session for compression. This will run the finalize method
         for each modifier in the session's lifecycle. This will also set the session's
         state to the finalized state.
@@ -202,6 +211,10 @@ class CompressionSession:
 
     def apply(self, **kwargs):
         """
+        以 one-shot 方式应用配方
+
+        这将调用会话生命周期中每个 modifier 的initialize和finalize方法。  这也将将会话的状态设置为最终状态。
+        
         Apply the recipe in one-shot manner. This will invoke the initialize
         and then finalize methods for each modifier in the session's lifecycle.
         This will also set the session's state to the finalized state.
@@ -221,6 +234,7 @@ class CompressionSession:
         **kwargs,
     ) -> ModifiedState:
         """
+        调用当前 CompressionSession 的事件
         Invoke an event for current CompressionSession.
 
         :param event_type: the event type to invoke

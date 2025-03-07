@@ -26,6 +26,7 @@ __all__ = [
 
 def initialize_recipe(model: Module, recipe_path: str):
     """
+    # 初始化之前已应用于模型的配方
     Initializes a recipe that has been previously applied to the model
 
     :param model: PyTorch model to apply structure to

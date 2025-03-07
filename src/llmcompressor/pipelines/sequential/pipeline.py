@@ -24,6 +24,17 @@ def run_pipeline(
     callback_modifier: Optional["Modifier"] = None,
 ):
     """
+    按照以下步骤运行顺序数据管道：
+    1.根据 `sequential_targets` 将模型划分为子图
+    2.数据按顺序通过每个子图。数据通过每个子图两次，一次是为了触发校准钩子，第二次是为了捕捉通过钩子发生量化后的激活。
+    3. 每个子图之间的中间激活被缓存，并在每个批次之间卸载到 CPU，以节省内存。
+
+    该管道要求模型可追溯数据加载器的数据。这对于使用视觉数据集的视觉语言模型来说可能是个问题，因为模型中需要进行专门的输入处理。
+
+    如果跟踪失败，将引发 torch.fx.proxy.TraceError。
+    可以通过封装不可跟踪函数（请参阅 llmcompressor.transformers.tracing）来使模型可跟踪
+
+
     Run a sequential data pipeline according to the following steps:
 
     1. The model is partitioned into subgraphs according to `sequential_targets`

@@ -62,6 +62,7 @@ def reset_session():
 
 def pre_initialize_structure(**kwargs):
     """
+    预先对活动会话的模型结构进行初始化
     A method to pre-initialize the structure of the model for the active session
 
     :param kwargs: the kwargs to pass to the active session's pre-initialize-structure
@@ -160,6 +161,8 @@ def apply(
     **kwargs,
 ) -> ModifiedState:
     """
+    # TODO:FLOW 应用配方，调用 initialize 以及 finalize 方法。
+
     A method to apply the recipe in one-shot manner. This will invoke the initialize
     and then finalize methods for each modifier in the active session's lifecycle.
 
@@ -201,6 +204,7 @@ def apply(
 
 class LifecycleCallbacks:
     """
+    用于调用活动会话生命周期事件的类
     A class for invoking lifecycle events for the active session
     """
 

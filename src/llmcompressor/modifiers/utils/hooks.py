@@ -68,6 +68,8 @@ class HooksMixin(BaseModel):
         **kwargs,
     ) -> RemovableHandle:
         """
+        在指定模块/参数上注册钩子，并可选择使用 HooksMixin.disable_hooks() 关闭该钩子。
+
         Registers a hook on a specified module/parameter with the option to disable it
         with HooksMixin.disable_hooks()
 
@@ -101,6 +103,7 @@ class HooksMixin(BaseModel):
 
     def remove_hooks(self, handles: Optional[Set[RemovableHandle]] = None):
         """
+        删除此 modifier 注册的钩子
         Removes hooks registered by this modifier
 
         :param handles: optional list of handles to remove, defaults to all hooks

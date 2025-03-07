@@ -60,6 +60,12 @@ class SmoothQuantMapping:
 
 class SmoothQuantModifier(Modifier):
     """
+    该Modifier在激活中执行异常值的通道平滑，通过减少动态范围从而使它们更易于来量化。
+    通过将反向运算应用于下一层权重来抵消平滑，从而使权重稍微更难量化。
+
+    由于此Modifier操纵模型的权重，因此只能在训练过程中one-shot而不能用于训练。
+    激活范围是通过通过模型运行一小部分校准数据来确定的。
+
      Implements the SmoothQuant algorithm from https://arxiv.org/abs/2211.10438. This
      modifier performs a channel-wise smoothing of outliers in activations, making them
      easier to quantize by reducing the dynamic range. The smoothing is offset by

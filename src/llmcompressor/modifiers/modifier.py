@@ -249,6 +249,9 @@ class Modifier(ModifierInterface, HooksMixin):
 
     def on_finalize(self, state: State, **kwargs) -> bool:
         """
+
+        on_finalize 在 modifier on_finalize 定义上调用，必须由继承modifier实现。
+
         on_finalize is called on modifier finalization and
         must be implemented by the inheriting modifier.
 

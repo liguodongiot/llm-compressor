@@ -87,8 +87,11 @@ def oneshot(**kwargs):
     """
     CLI entrypoint for running oneshot calibration
     """
+
     # TODO: Get rid of training args when Oneshot refactor comes in
     model_args, data_args, recipe_args, training_args = parse_args(**kwargs)
+
+    # 设置量化参数
     training_args.do_oneshot = True
 
     main(model_args, data_args, recipe_args, training_args)
@@ -138,7 +141,10 @@ def parse_args(**kwargs):
     else:
         parsed_args = parser.parse_dict(kwargs)
 
+
     model_args, data_args, recipe_args, training_args = parsed_args
+
+    # 如果 recipe_args 不为空，且不是字典类型，转换为字典
     if recipe_args.recipe_args is not None:
         if not isinstance(recipe_args.recipe_args, dict):
             arg_dict = {}
@@ -313,6 +319,8 @@ def main(
     training_args: TrainingArguments,
 ):
     """
+    文本生成模型微调入口    
+
     Main entrypoint for finetuning text generation models. A model can be loaded from
     Hugging Face or disk, and resuming training from a checkpoint is supported.
 
@@ -346,10 +354,12 @@ def main(
     # Setup based on stage types if running stage mode
     if training_args.run_stages and recipe_args.recipe is not None:
         recipe_obj = Recipe.create_instance(recipe_args.recipe)
+
         for stage in recipe_obj.stages:
             run_type = stage.infer_run_type()
             if run_type is StageRunType.ONESHOT:
                 training_args.do_oneshot = True
+                
             elif run_type is StageRunType.TRAIN:
                 training_args.do_train = True
 
@@ -369,10 +379,12 @@ def main(
 
     model = model_args.model
     if isinstance(model, str) or isinstance(model, PosixPath):
+        # 初始化模型
         model, teacher = initialize_model_from_path(
             model_args,
             training_args,
         )
+
     # patch a shared tensor bug in HF transformers
     # https://github.com/huggingface/transformers/issues/33689
     patch_tied_tensors_bug(model)
@@ -382,6 +394,7 @@ def main(
 
     processor = model_args.processor
     if isinstance(processor, str) or processor is None:
+        # 实例处理器类，分词、特征抽取、图像处理
         processor = initialize_processor_from_path(model_args, model, teacher)
 
     pre_initialize_structure(model=model)
@@ -396,12 +409,14 @@ def main(
         training_args=training_args,
         recipe_args=recipe_args,
     )
+
     add_labels = training_args.do_train or training_args.run_stages
     stage_runner.populate_datasets(processor=processor, add_labels=add_labels)
     train_dataset = stage_runner.get_dataset_split("train")
     eval_dataset = stage_runner.get_dataset_split("validation")
     calib_dataset = stage_runner.get_dataset_split("calibration")
 
+    # 初始化 Trainer
     trainer = Trainer(
         model_init=get_session_model,
         teacher=teacher,
@@ -416,14 +431,17 @@ def main(
         data_collator=data_args.data_collator,
     )
 
+    # 修改Trainer的save_pretrained
     # wrap model.save_pretrained
     if is_fsdp_model(model):
         modify_fsdp_model_save_pretrained(trainer, processor)
     else:
         modify_save_pretrained(model)
 
+    # TODO:FLOW 初始化 trainer
     stage_runner.trainer = trainer
 
+    # 交替
     # alternating Training/One-shot
     if training_args.run_stages:
         checkpoint = None
@@ -433,6 +451,7 @@ def main(
 
         # exit immediately
         return
+    
     # Training
     if training_args.do_train:
         checkpoint = None

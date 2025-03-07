@@ -39,6 +39,9 @@ __all__ = ["QuantizationModifier"]
 
 class QuantizationModifier(Modifier):
     """
+    这个功能可以让指定的模块或者它的子模块支持训练后量化（PTQ）和量化感知训练（QAT）。
+    经过校准（PTQ）或者开始训练（QAT）后，这些模块的前向传播会模拟量化执行，并且这个modifier会一直开启，直到训练完成。
+
     Enables post training quantization (PTQ) and quantization aware training (QAT) for a
     given module or its submodules. After calibration (PTQ) or the start epoch (QAT),
     the specified module(s) forward pass will emulate quantized execution and the

@@ -53,10 +53,13 @@ def tokenize(sample):
 
 ds = ds.map(tokenize, remove_columns=ds.column_names)
 
+
+# TODO: FLOW 设置量化算法
 # Configure the quantization algorithm to run.
 #   * quantize the weights to 4 bit with GPTQ with a group size 128
 recipe = GPTQModifier(targets="Linear", scheme="W4A16", ignore=["lm_head"])
 
+# TODO: FLOW 量化
 # Apply algorithms.
 oneshot(
     model=model,

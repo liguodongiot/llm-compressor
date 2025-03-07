@@ -36,6 +36,8 @@ __all__ = ["GPTQModifier"]
 
 class GPTQModifier(Modifier, HooksMixin):
     """
+    该 modifier 使用激活来校准 Hessian 矩阵，然后使用该矩阵来确定模型权重的最佳量化值和排序
+
     Implements the GPTQ algorithm from https://arxiv.org/abs/2210.17323. This modifier
     uses activations to calibrate a hessian matrix, which is then used to determine
     optimal quantizion values and orderings for the model weights.
@@ -64,12 +66,12 @@ class GPTQModifier(Modifier, HooksMixin):
     Lifecycle:
         - on_initialize_structure
             - _build_quant_modifier
-        - on_initialize
-            - register_hook(module, compress_module, "forward")
-            - run_sequential / run_layer_sequential / run_basic
+        - on_initialize 初始化并运行当前状态的GPTQ算法
+            - register_hook(module, compress_module, "forward") 在指定模块/参数上注册钩子
+            - run_sequential / run_layer_sequential / run_basic 
                 - make_empty_hessian
                 - accumulate_hessian
-        - on_sequential_batch_end
+        - on_sequential_batch_end 量化模块
             - quantize_weight
         - on_finalize
             - remove_hooks()
@@ -196,6 +198,8 @@ class GPTQModifier(Modifier, HooksMixin):
 
     def on_initialize(self, state: State, **kwargs) -> bool:
         """
+        初始化并运行当前状态的GPTQ算法
+
         Initialize and run the GPTQ algorithm on the current state
 
         :param state: session state storing input model and calibration data
@@ -281,6 +285,7 @@ class GPTQModifier(Modifier, HooksMixin):
 
     def on_finalize(self, state: State, **kwargs) -> bool:
         """
+        禁用 OBCQ 算法使用的量化观测器
         disable the quantization observers used by the OBCQ algorithm
 
         :param state: session state storing input model and calibration data
@@ -302,6 +307,7 @@ class GPTQModifier(Modifier, HooksMixin):
         _output: torch.Tensor,
     ):
         """
+        根据GPTQ算法量化模块的权重
         Quantize a module's weight according to the GPTQ algorithm
 
         :param name: name of module being quantized
@@ -313,6 +319,7 @@ class GPTQModifier(Modifier, HooksMixin):
         # Assume that first argument is the input
         inp = args[0]
 
+        # 初始化hessian
         # Initialize hessian if not present
         if module not in self._num_samples:
             init_device = (
@@ -321,6 +328,7 @@ class GPTQModifier(Modifier, HooksMixin):
             self._hessians[module] = make_empty_hessian(module, device=init_device)
             self._num_samples[module] = 0
 
+        # 通过输入累积hessian，并可选择卸载
         # Accumulate hessian with input with optional offloading
         with self._maybe_onload_hessian(module):
             self._hessians[module], self._num_samples[module] = accumulate_hessian(
@@ -332,6 +340,7 @@ class GPTQModifier(Modifier, HooksMixin):
 
     def on_sequential_batch_end(self):
         """
+        量化模块
         Quantize modules.
         TODO: implement with event callback
         """
@@ -379,6 +388,7 @@ class GPTQModifier(Modifier, HooksMixin):
 
     def _build_quant_modifier(self):
         """
+        基于指定的 config_group，ignore list 和num_calibration_steps 构建量化 modifier
         Build a quantization modifier based on the specified config_groups,
         ignore list, and num_calibration_steps.
 

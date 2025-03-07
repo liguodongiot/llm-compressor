@@ -78,6 +78,8 @@ class TrainingLoopCallbacks(TrainerCallback):
 
 class DisableHalfPrecisionCallback(TrainerCallback):
     """
+    TrainerCallback 用于在 QAT 训练开始之前禁用 FP16 训练
+    
     TrainerCallback for disabling FP16 training before QAT training begins
 
     :param trainer: LLM Compressor trainer that will call back into this object

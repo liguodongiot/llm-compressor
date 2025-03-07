@@ -32,6 +32,9 @@ from llmcompressor.utils.fsdp.helpers import is_fsdp_model, save_model_and_recip
 
 class StageRunner:
     """
+    用于训练、评估和 one_shot 工作流的启动类。它管理每个流的数据分割和配置。
+    将来，这个类还将处理在不同流之间的切换。
+
     Launcher class for train, eval and one_shot flows. Manages data splits for each
     flow and configurations. In the future this class will also handle alternating
     between the different flows
@@ -67,6 +70,7 @@ class StageRunner:
 
     def populate_datasets(self, processor: Processor, add_labels: bool = True):
         """
+        加载与分割数据集
         Loads datasets for each flow based on data_args, stores a Dataset for each
         enabled flow in self.datasets
 
@@ -119,6 +123,7 @@ class StageRunner:
                 )
                 tokenized_datasets[split_name] = dataset_manager(add_labels=add_labels)
 
+        # 分割数据集
         self.datasets = make_dataset_splits(
             tokenized_datasets,
             do_train=self._training_args.do_train,
@@ -138,6 +143,7 @@ class StageRunner:
 
     def one_shot(self, stage: Optional[str] = None):
         """
+        # 运行oneshot校准。
         Run oneshot calibration on the active model
 
         :param stage: which stage of the recipe to run, or None to run whole recipe
@@ -154,6 +160,7 @@ class StageRunner:
                 accelerator=self.trainer.accelerator,
             )
 
+            # 如果我们在第一次初始化FSDP模型后不进行一次前向传播，调用 summon_full_params 将会失败
             # if we don't run a forward pass after initializing the FSDP model for the
             # first time, calls to summon_full_params will fail ¯\_(ツ)_/¯
             if is_fsdp_model(self.trainer.model):
@@ -165,7 +172,9 @@ class StageRunner:
 
         self.trainer.accelerator.wait_for_everyone()
 
+        # TODO:FLOW SessionManagerMixIn.one_shot
         self.trainer.one_shot(calibration_data=calib_data, stage=stage)
+        
 
     def train(self, checkpoint: str, stage: Optional[str] = None):
         """
@@ -213,6 +222,8 @@ class StageRunner:
 
     def run_sequential_stages(self, checkpoint: Optional[str] = None):
         """
+        一步步地运行这个菜谱，可以交替使用one-shot和finetuning流程。每个步骤结束后，可以选择保存模型输出。
+        
         Run the recipe stage by stage, allowing for alternating between one-shot and
         finetuning flows. Optionally save the model output at the end of each stage
 

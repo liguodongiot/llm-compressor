@@ -1,4 +1,8 @@
 """
+管理LLM Compressor中压缩的生命周期。
+
+这个模块提供了一个类，用来定义和管理压缩事件的生命周期，包括初始化、结束和事件处理。
+
 Module for managing the compression lifecycle in the LLM Compressor.
 
 This module provides a class for defining and managing the lifecycle of compression
@@ -26,6 +30,7 @@ __all__ = ["CompressionLifecycle"]
 @dataclass
 class CompressionLifecycle:
     """
+    用于管理 LLM Compressor 中压缩事件生命周期的类。
     A class for managing the lifecycle of compression events in the LLM Compressor.
 
     :param state: The current state of the compression process
@@ -40,7 +45,9 @@ class CompressionLifecycle:
 
     state: Optional[State] = None
     recipe_container: RecipeContainer = field(default_factory=RecipeContainer)
+
     modifiers: List[StageModifiers] = field(default_factory=list)
+
     event_lifecycle: Optional[EventLifecycle] = None
 
     initialized_structure: bool = False
@@ -65,6 +72,7 @@ class CompressionLifecycle:
                 logger.warning(f"Exception during finalizing modifier: {e}")
 
         self.state = None
+        # 食谱/配方容器
         self.recipe_container = RecipeContainer()
         self.modifiers = []
         self.event_lifecycle = None
@@ -84,11 +92,15 @@ class CompressionLifecycle:
         :rtype: List[Any]
         """
         logger.debug("Pre-initializing structure")
+
         self._check_create_state()
+
         extras = self.state.update(**kwargs)
+
         extras = self.recipe_container.update(**extras)
 
         self._check_compile_recipe()
+
         mod_data = []
         for mod in self.modifiers:
             data = mod.pre_initialize_structure(state=self.state, **extras)
@@ -109,7 +121,8 @@ class CompressionLifecycle:
     def initialize(self, **kwargs) -> List[Any]:
         """
         Initialize the compression lifecycle.
-
+        压缩生命周期初始化
+        
         :param kwargs: Additional arguments to update the state with
         :return: List of data returned from initialization of modifiers
         :rtype: List[Any]
@@ -138,7 +151,8 @@ class CompressionLifecycle:
     def finalize(self, **kwargs) -> List[Any]:
         """
         Finalize the compression lifecycle.
-
+        压缩生命周期结束
+        
         :param kwargs: Additional arguments to update the state with
         :return: List of data returned from finalizing modifiers
         :rtype: List[Any]
@@ -234,6 +248,7 @@ class CompressionLifecycle:
             return
 
         logger.debug("Creating new State instance for compression lifecycle")
+
         self.state = State()
         logger.info("State created for compression lifecycle")
 
@@ -244,6 +259,7 @@ class CompressionLifecycle:
         logger.debug(
             "Compiling recipe and creating modifiers for compression lifecycle"
         )
+
         self.modifiers = self.recipe_container.compiled_recipe.create_modifier()
         for mod in self.modifiers:
             if mod.unique_id in self.recipe_container.applied_stages:

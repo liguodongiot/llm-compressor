@@ -10,6 +10,8 @@ __all__ = ["RecipeContainer"]
 @dataclass
 class RecipeContainer:
     """
+    一个用于会话中的食谱容器。它提供了一些工具来更新食谱，并将它们编译成一个单独的食谱。
+
     A container for recipes to be used in a session. Provides utilities
     to update the recipes and compile them into a single recipe.
 
@@ -115,6 +117,8 @@ class RecipeContainer:
 
     def check_compile_recipe(self) -> bool:
         """
+        检查是否需要将食谱合并成一个单独的食谱，如果需要，则合并它们。
+
         Check if the recipes need to be compiled into a single recipe and
         compile them if they do.
 

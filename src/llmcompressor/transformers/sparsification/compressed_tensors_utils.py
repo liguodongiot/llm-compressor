@@ -102,6 +102,7 @@ def modify_fsdp_model_save_pretrained(trainer, processor: Processor):
 
 def modify_save_pretrained(model: torch.nn.Module):
     """
+    用支持压缩的封装版本重写预训练模型的 save_pretrained() 方法
     Overrides a PreTrainedModel's save_pretrained() method with a wrapped version that
     supports compression
     """

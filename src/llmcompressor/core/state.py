@@ -75,6 +75,7 @@ class Hardware:
 @dataclass
 class State:
     """
+    State 类包含有关当前压缩状态的信息。
     State class holds information about the current compression state.
 
     :param model: The model being used for compression

@@ -54,6 +54,8 @@ METADATA_ARGS = [
 
 class SessionManagerMixIn:
     """
+    混合类以扩展Hugging Face Trainer类以支持LLM Compressor的 one-shot 和微调流程的配方。
+
     Mix-In class to extend the Hugging Face Trainer class to support LLM Compressor
     recipes for one-shot and finetuning flows.
 
@@ -114,8 +116,10 @@ class SessionManagerMixIn:
         # setup callbacks and loss
         self.optim_callbacks = TrainingLoopCallbacks(self)
         self.callback_handler.add_callback(self.optim_callbacks)
+
         self.callback_disable_fp16 = DisableHalfPrecisionCallback(self)
         self.callback_handler.add_callback(self.callback_disable_fp16)
+        
         self.criterion = torch.nn.CrossEntropyLoss()
 
         model_signature = inspect.signature(self.model.forward)
@@ -140,6 +144,7 @@ class SessionManagerMixIn:
         stage: Optional[str] = None,
     ):
         """
+        
         Initialize the CompressionSession from the specified epoch, evaluates the recipe
         and initialized the modifiers for the training session
 
@@ -449,6 +454,7 @@ class SessionManagerMixIn:
         """
         Run oneshot calibration on the active model
         :param stage: which stage of the recipe to run, or None to run whole recipe
+        要运行配方的哪个阶段，或 None 运行整个配方
         :param calib_data: dataloader of calibration data
         """
         apply(
@@ -465,6 +471,7 @@ class SessionManagerMixIn:
 
         # log model sparsity
         # self.maybe_log_model_sparsification()
+        # 等待所有进程完成
         self.accelerator.wait_for_everyone()
 
     def save_model(self, output_dir: str, _internal_call=False, _is_oneshot=False):
